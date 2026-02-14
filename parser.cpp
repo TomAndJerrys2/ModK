@@ -184,6 +184,42 @@ static std::unique_ptr<ExpressionAST> ParseIdentifierExpr(const Type & _type) {
 	return std::make_unique<FunctionAST> (/* type */, Id_name, std::move(_args));
 }
 
+static std::unique_ptr<ExpressionAST> ParsePrimary() {
+	switch(CurrentToken) {
+		case Token::TokenIdentifier:
+			return ParseIdentifierExpr();
 
+		case Token::Token_func:
+			return ParseParentExpression();
+
+		case Token::TokenNumber:
+			return ParseNumberExpression();
+
+		// Types which we'll do later
+		case Token::Token_i32:
+			return ParseIntegerExpression();
+
+		case Token::Token_u32:
+			return ParseUIntegerExpression();
+
+		case Token::Token_char:
+			return ParseCharacterExpression();
+
+		case Token::Token_uchar:
+			return ParseUCharacterExpression();
+
+		case Token::Token_str:
+			return ParseStrExpression();
+
+		case Token::Token_f32:
+			return ParseFloatExpression();
+
+		case Token::Token_uf32:
+			return ParseUFloatExpression();
+
+		default:
+			return LogError("> Unkown token while parsing");
+	}
+}
 
 
