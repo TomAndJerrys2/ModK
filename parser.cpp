@@ -119,3 +119,32 @@ std::unique_ptr<PrototypeAST> LogErrorProto(const char* str) {
 	return nullptr;
 }
 
+// for parsing number literal expressions
+static std::unique_ptr<ExpressionAST> ParseNumExpr(const double NumVal) {
+	auto res = std::make_unique<NumberExpressionAST> (NumVal);
+	GetNextToken();
+
+	return std::move(res);
+}
+
+// for parsing string literal expressions
+static std::unique_ptr<ExpressionAST> ParseStrExpr(const std::string & str) {
+	auto res = std::make_unique<StringExpressionAST> (str);
+	GetNextToken();
+
+	return std::move(res);
+}
+
+// parsing parent expressions such as ::= ( expr )
+static std::unique_ptr<ExpressionAST> ParseParentExpr() {
+	GetNextToken();
+
+	auto v = ParseExpression();
+	if(!v) return nullptr;
+
+	if(CurrentToken != ')') return LogError("> Expected ')'");
+
+	GetNextToken();
+	return v;
+}
+
