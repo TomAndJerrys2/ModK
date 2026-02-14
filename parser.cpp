@@ -148,3 +148,42 @@ static std::unique_ptr<ExpressionAST> ParseParentExpr() {
 	return v;
 }
 
+// variables and function types will be ommited until I link this
+// with LLVM and can actual optimize the bytecode to produce
+// efficient, static typing
+static std::unique_ptr<ExpressionAST> ParseIdentifierExpr(const Type & _type) {
+//	Types Id_type = _type;
+//	GetNextToken();
+	
+	std::string Id_name = IdentifierStr;
+	GetNextToken();
+
+	if(CurrentToken != '(')
+		return std::make_unique<ExpressionAST> (Id_name);
+	
+	std::vector<std::unique_ptr<ExpressionAST>> _args;
+	if(CurrentToken != ')') {
+		while(true) {
+			if(auto _arg = ParseExpression()) {
+				_args.push_back(_arg);
+			} else {
+				return nullptr;
+			}
+
+			if(CurrentToken == ')')
+				break;
+
+			if(CurrentToken != ',')
+				return LogError("> Expected ) or , in arg list\n");
+
+			GetNextToken();
+		}
+	}
+
+	GetNextToken();
+	return std::make_unique<FunctionAST> (/* type */, Id_name, std::move(_args));
+}
+
+
+
+
