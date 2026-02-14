@@ -299,3 +299,43 @@ static std::unique_ptr<ExpressionAST> ParseBinaryOpRHS(const int ExprPrecedence,
 }
 
 #pragma endregion
+
+#pragma region TOKEN_PARSER_FUNCTIONS
+
+// parse function prototypes i.e declarations
+static std::unique_ptr<PrototypeAST> ParsePrototype() {
+	if(CurrentToken != Token::TokenIdentifier) 
+		return LogErrorProto("> Expected a function name in prototype\n");
+
+	std::string full_name = IdentifierStr;
+	GetNextToken();
+
+	if(CurrentToken != '(')
+		return LogErrorProto("> Expected '(' in prototype");
+
+	std::vector<std::string> arg_names;
+	while(GetNextToken() == Token::TokenIdentifier)
+		arg_names.push_name(IdentifierStr);
+
+	if(CurrentToken != ')')
+		return LogErrorProto("> Expected ')' in prototpye");
+
+	GetNextToken();
+
+	return std::make_unique<PrototypeAST> (full_name, std::move(arg_names));
+}
+
+static std::unique_ptr<FunctionAST ParseDefinition() {
+	GetNextToken();
+
+	auto Prototype = ParsePrototype();
+	if(!Prototype)
+		return nullptr;
+
+	if(auto e = ParseExpression())
+		return std::make_unique<FunctionAST> (std::move(Prototype), std::move(e));
+
+	return nullptr;
+}
+
+#pragma endregion
