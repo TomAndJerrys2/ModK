@@ -196,25 +196,28 @@ static std::unique_ptr<ExpressionAST> ParsePrimary() {
 			return ParseNumberExpression();
 
 		// Types which we'll do later
-		case Token::Token_i32:
+		// marked with unlikely so I can
+		// compile the first build and respectively,
+		// work on these later...
+	[[unlikely]] case Token::Token_i32:
 			return ParseIntegerExpression();
 
-		case Token::Token_u32:
+	[[unlikely]] case Token::Token_u32:
 			return ParseUIntegerExpression();
 
-		case Token::Token_char:
+	[[unlikely]] case Token::Token_char:
 			return ParseCharacterExpression();
 
-		case Token::Token_uchar:
+	[[unlikely]] case Token::Token_uchar:
 			return ParseUCharacterExpression();
 
-		case Token::Token_str:
+	[[unlikely]] case Token::Token_str:
 			return ParseStrExpression();
 
-		case Token::Token_f32:
+	[[unlikely]] case Token::Token_f32:
 			return ParseFloatExpression();
 
-		case Token::Token_uf32:
+	[[unlikely]] case Token::Token_uf32:
 			return ParseUFloatExpression();
 
 		default:
@@ -222,4 +225,66 @@ static std::unique_ptr<ExpressionAST> ParsePrimary() {
 	}
 }
 
+// KV pairs associates the binary operation with
+// its precedence via a map
+static std::map<char, int> BinOpPrecedence;
 
+// basic getter function for returning precedence
+// will be some arbitrary value until I decide
+// how the language should handle these return codes
+static int GetTokenPrecedence() const {
+	if(!isascii(CurrentToken))
+		return -1;
+
+	int TokenPrecedence = BinOpPrecedence;
+	if(TokenPrecedence <= 0)
+		return -1;
+
+	return TokenPrecedence;
+}
+
+// this is mainly where the recursive-descent parser
+// functionality comes in and a lot of the parsing
+// functions use this. However, following LLVMs tutorial
+// this will stay basic (i.e just evaluating simple binary
+// expressions) until I figure out the grammer and context
+// associations of the language :)
+static std::unique_ptr<ExpressionAST> ParseExpression() {
+	auto lhs = ParsePrimary();
+
+	if(!lhs)
+		return nullptr;
+	
+	// as you can see this does fuck all at the
+	// moment. will change eventually....
+	return ParseBinaryOpRHS(0, std::move(lhs));
+}
+
+static std::unique_ptr<ExpressionAST> ParseBinaryOpRHS(const int ExprPrecedence, 
+		std::unique_ptr<ExpressionAST> LHS) {
+
+	while(true) {
+		int TokenPrecedence = GetTokenPrecedence();
+
+		if(TokenPrecedence < ExprPrecedence)
+			return LHS;
+
+		int BinaryOp = CurrentToken();
+		GetNextToken();
+
+		auto RHS = ParsePrimary();
+		if(!RHS)
+			return nullptr;
+		
+		int NextPrecedence = GetTOkenPrecedence();
+		
+		// marked with unlikely now as ill figure this
+		// out later, a lot of work is to be done.
+		[[unlikely]]
+		if(TokenPrecedence < NextPrecedence)
+			return nullptr;
+	
+		LHS = std::make_unique<BinaryExprAST> (BinaryOp, std::move(LHS), 
+			std::move(RHS));
+	}
+}
