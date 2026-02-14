@@ -1,0 +1,121 @@
+// Base class for expression nodes
+enum class Types {
+	I32,
+	U32,
+	F32,
+	UF32,
+	STR,
+	CHAR,
+	UCHAR,
+	NONE,
+};
+
+class ExpressionAST {
+	
+	public:
+		virtual ~ExpressionAST() = default;
+};
+
+// Expression class for number literals like 1, 2 or 1.23
+class NumberLiteralAST : public ExpressionAST {
+	double m_Value {};
+
+	public:
+		NumberLiteralAST(double _value) : m_Value {_value} {}
+};
+
+// Expression class for string literals like "Hello, World!"
+class StringLiteralAST : public ExpressionAST {
+	std::string m_Literal {};
+
+	public:
+		StringLiteralAST(std::string & _literal) : m_Literal {_literal} {}
+};
+
+// Expression class for referencing variables with a type
+// such as <type> <name>;
+class VariableExpressionAST : public ExpressionAST {
+	std::string m_Name {};
+	std::unique_ptr<Types> m_Type;
+	
+	public:
+		VariableExpressionAST(const std::unique_ptr<Types> & _type, const std::string & _name)
+			: m_Type {std::move(_type)}, m_Name {_name} {} 
+};
+
+// Expression class for binary operators +, -, /, * etc
+class BinaryExpressionAST : public ExpressionAST {
+	char m_Operator {};
+	std::unique_ptr<ExpressionAST> LHS, RHS;
+
+	public:
+		BinaryExpressionAST(const char _op, std::unique_ptr<ExpressionAST> _rhs,
+				std::unique_ptr<ExpressionAST> _lhs)
+			: m_Operator {_op}, LHS {std::move(_lhs)}, RHS {_rhs} {}
+};
+
+// Expression class for function calls
+class FuncCallAST : public ExpressionAST {
+	std::string m_Caller {};
+	std::vector<std::unique_ptr<ExpressionAST>> m_Args;
+	
+	std::vector<Types> m_ArgsTypes;
+	std::unique_ptr<Types> m_ReturnType;
+
+	public:
+		FuncCallAST(const std::string & _caller, std::vector<std::unique_ptr<ExpressionAST>>
+				& _args, const std::unique_ptr<Types> _return_type, 
+					std::vector<Types> & _arg_types)
+			: m_Caller {_caller}, m_Args {std::move(_args)}, m_ReturnType {std::move(_return_type)},
+			  m_ArgTypes {_arg_types} {}
+};
+
+// Expression class for function prototypes i.e
+// <return_type> <name> (<args...>);
+class PrototypeAST : public ExpressionAST {
+	std::string m_Name {};
+	std::vector<std::string> m_Args;
+	
+	std::vector<Types> m_ArgTypes;
+	std::unique_ptr<Types> m_ReturnType;
+
+	public:
+		PrototypeAST(const std::string & _name, std::vector<std::string> _args,
+				std::unique_ptr<Types> _return_type, std::vector<Types> & _arg_types)
+			: m_Name {_name}, m_Args {_args}, m_ReturnType {std::move(_return_type)},
+			  m_ArgTypes {_arg_types}
+};
+
+// Expression class for function definitions 
+// (including the body)
+class FunctionAST : public ExpressionAST {
+	std::unique_ptr<PrototypeAST> m_Proto;
+	std::unique_ptr<ExpressionAST m_Body;
+	
+	std::vector<Types> m_ArgsTypes;
+
+	public:
+		FunctionAST(std::unique_ptr<PrototypeAST> _proto, std::unique_ptr<ExpressionAST> _body, 
+				std::vector<Types> & _arg_types)
+			: m_Proto {std::move(_proto)}, m_Body {std::move(_body)},
+	     			m_ArgTypes {_arg_types}	{}
+};
+
+// Simple token buffer where CurrentToken is what
+// is being looked at and GetNextToken reads the other tokens
+static int CurrentToken;
+static int GetNextToken() {
+	return CurrentToken = GetToken();
+}
+
+// Helper functions for err handlings
+std::unique_ptr<ExpressionAST> LogError(const char* str) {
+	fprintf(stderr, "> Error: %s\n", str);
+	return nullptr;
+}
+
+std::unique_ptr<PrototypeAST> LogErrorProto(const char* str) {
+	LogError(str);
+	return nullptr;
+}
+
