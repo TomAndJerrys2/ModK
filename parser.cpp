@@ -10,6 +10,8 @@ enum class Types {
 	NONE,
 };
 
+#pragma region AST_NODES
+
 class ExpressionAST {
 	
 	public:
@@ -101,6 +103,8 @@ class FunctionAST : public ExpressionAST {
 	     			m_ArgTypes {_arg_types}	{}
 };
 
+#pragma endregion
+
 // Simple token buffer where CurrentToken is what
 // is being looked at and GetNextToken reads the other tokens
 static int CurrentToken;
@@ -184,6 +188,9 @@ static std::unique_ptr<ExpressionAST> ParseIdentifierExpr(const Type & _type) {
 	return std::make_unique<FunctionAST> (/* type */, Id_name, std::move(_args));
 }
 
+// main recursive function for parsing identifiers and
+// type tokens - a lot of the functionality is purposefully
+// witheld until I dive in deep to the lovely LLVM
 static std::unique_ptr<ExpressionAST> ParsePrimary() {
 	switch(CurrentToken) {
 		case Token::TokenIdentifier:
@@ -243,6 +250,8 @@ static int GetTokenPrecedence() const {
 	return TokenPrecedence;
 }
 
+#pragma region BINARY_OPERATIONS
+
 // this is mainly where the recursive-descent parser
 // functionality comes in and a lot of the parsing
 // functions use this. However, following LLVMs tutorial
@@ -288,3 +297,5 @@ static std::unique_ptr<ExpressionAST> ParseBinaryOpRHS(const int ExprPrecedence,
 			std::move(RHS));
 	}
 }
+
+#pragma endregion
