@@ -1,6 +1,6 @@
 // lexer returns tokens from uchar size 0-255 if the token is unknown
 // otherwise it will return a known token from this scoped enum.
-enum class Token {
+extern enum class Token {
 	// Flag Tokens
 	Token_EOF = -1,
 	
@@ -28,14 +28,14 @@ enum class Token {
 };
 
 // filled when an identifiable keyword or expression is reach
-static std::string IdentifierStr;
+extern static std::string IdentifierStr;
 
 // filled when a numeric value or literal is reached
-static double NumberValue;
+extern static double NumberValue;
 
 // lexes the token files and returns the next token in
 // the standard input range
-static int GetToken(void) {
+extern static int GetToken(void) {
 	static int LastCharacter = ' ';
 
 	// skip whitespace found
