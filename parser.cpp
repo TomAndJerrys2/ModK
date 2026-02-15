@@ -368,7 +368,7 @@ static std::uniqure_ptr<FunctionAST> ParseTopLevelExpr() {
 
 static void repl() {
 	while(true) {
-		fprintf(stderr, "> Ready! );
+		fprintf(stderr, "> Ready! ");
 
 		switch(CurrentToken()) {
 			case Token::Token_TokenEOF:
