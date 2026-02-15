@@ -463,4 +463,43 @@ Value * BinaryExpressionAST() {
 	}
 }
 
+Value * CallExpressionAST::codegen() {
+	Function * Callee = TheModule->getFunction(Caller);
+
+	if(!Callee)
+		return LogErrorV("> Unknown Function Referenced");
+
+	if(Callee->arg_size() != m_Args.size())
+		return LogErrorV("> Incorrect Arguments passed");
+
+	std::vector<Value *> args_v;
+	for(size_t i {0}, e = m_Args.size(); i != e; ++i) {
+		args_v.push_back(m_Args[i]->codegen());
+
+		if(!args_v.back())
+			return nullptr;
+	}
+
+	return Builder->CreateCall(Calle, args_v, "calltmp");
+}
+
+Function* PrototypeAST::codegen() {
+	std::vector<Type *> Doubles(m_Args.size(), Type::getDoubleTy(*TheContext));
+
+	FunctionType* ft = FunctionType::get(
+		Type::getDoubleTy(*TheContext), Doubles, false
+	);
+
+	FunctionType* f = Function::Create(
+		ft, Function::ExternalLinkage, Name, TheModule.get()
+	);
+
+	size_t idx {0};
+
+	for(auto & Arg : F->arg)
+		Arg.setName(m_Args[idx++]);
+
+	return f;
+}
+
 #pragma endregion
