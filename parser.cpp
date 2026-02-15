@@ -502,4 +502,34 @@ Function* PrototypeAST::codegen() {
 	return f;
 }
 
+Function* FunctionAST::codegen() {
+	Function* theFunction = TheModule->getFunction(proto->getName());
+
+	if(!theFunction)
+		theFunction = proto->codegen();
+
+	if(!theFunction)
+		return nullptr;
+
+	if(!theFunction->empty())
+		return dynamic_cast<Function* > (LogErrorV("> Func cannot be redefined"));
+
+	BasicBlock* bb = BasicBlock::Create(*TheContext, "entry", theFunction);
+	Builder->SetInsertPoint(bb);
+
+	NamedValues.clear();
+	for(auto & arg : theFunction->m_Args)
+		NamedValues[std::string(arg.getName())] = &arg;
+
+	if(Value* ret_val = Body->codegen()) {
+		Builder->CreateRet(ret_val);
+		verifyFunction(*theFunction);
+
+		return theFunction();
+	}
+
+	theFunction->eraseFromParent();
+	return nullptr;
+}
+
 #pragma endregion
