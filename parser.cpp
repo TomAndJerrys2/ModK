@@ -412,3 +412,45 @@ static void repl() {
 }
 
 #pragma endregion
+
+#pragma region CODEGEN_IMPL
+
+Value * NumberExpressionAST::codegen() {
+	return ConstantFP::get(*TheContext, APFLoat(Val));
+}
+
+Value * VariableExpressionAST::codegen() {
+	Value* V = NamedValues[Name];
+
+	if(!V) LogErrorV("> Unkown Variable name");
+
+	return V;
+}
+
+Value * BinaryExpressionAST() {
+	Value* L = LHS->codegen();
+	Value* R = RHS->codegen();
+
+	if(!L || !R) return nullptr;
+
+	switch(Op) {
+		case '+':
+			return Builder->CreateFAdd(L, R, "addtmp");
+
+		case '-':
+			return Builder->CreatFSub(L, R, "subtmp");
+
+		case '*':
+			return Builder->CreateFMul(L, R, "multmp");
+
+		case '<':
+			L = Builder->CreateFCmpULT(L, R, "cmptmp");
+			return Builder->CreateUIToFP(L, Type::getDoubleTy(*TheContext),
+					"booltmp");
+
+		default:
+			LogErrorV("> Invalid Binary Operator");
+	}
+}
+
+#pragma endregion
