@@ -338,4 +338,74 @@ static std::unique_ptr<FunctionAST ParseDefinition() {
 	return nullptr;
 }
 
+static std::uniqure_ptr<FunctionAST> ParseTopLevelExpr() {
+	if(auto e = ParseExpression()) {
+		auto proto = std::make_unique<PrototypeExpr> ("__anon_epxr", 
+				std::vector<std::string>());
+
+		return std::make_unique<FunctionAST> (std::move(proto), std::move(e));
+	}
+
+	return nullptr;
+}
+
+#pragma endregion
+
+#pragma region RDP_LOOP
+
+static void repl() {
+	while(true) {
+		fprintf(stderr, "> Ready! );
+
+		switch(CurrentToken()) {
+			case Token::Token_TokenEOF:
+				return;
+			
+			case ';':
+				GetNextToken();
+				break;
+
+			case Token::Token_func:
+				HandleFuncDefinition();
+				break;
+
+			case Token::TokenNumber:
+				HandleNumLitDefinition();
+				break;
+
+		[[unlikely]] case Token::Token_i32:
+				Handlei32();
+				break;
+
+		[[unlikely]] case Token::Token_u32:
+				Handleu32();
+				break;
+		
+		[[unlikely]] case Token::Token_char:
+				Handlechar();
+				break;
+		
+		[[unlikely]] case Token::Token_uchar:
+				Handleuchar();
+				break;
+		
+		[[unlikely]] case Token::Token_str:
+				HandleStr();
+				break;
+		
+		[[unlikely]] case Token::Token_f32:
+				Handlef32();
+				break;
+		
+		[[unlikely]] case Token::Token_uf32:
+				Handleuf32();				
+				break;
+			
+			default:
+				HandleTopLevelExpression();
+				break;
+		}
+	}
+}
+
 #pragma endregion
