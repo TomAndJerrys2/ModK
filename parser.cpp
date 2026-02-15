@@ -16,6 +16,7 @@ class ExpressionAST {
 	
 	public:
 		virtual ~ExpressionAST() = default;
+		virtual Value * codegen() const = 0;
 };
 
 // Expression class for number literals like 1, 2 or 1.23
@@ -24,6 +25,7 @@ class NumberLiteralAST : public ExpressionAST {
 
 	public:
 		NumberLiteralAST(double _value) : m_Value {_value} {}
+		virtual Value * codegen() const override;
 };
 
 // Expression class for string literals like "Hello, World!"
@@ -32,6 +34,7 @@ class StringLiteralAST : public ExpressionAST {
 
 	public:
 		StringLiteralAST(std::string & _literal) : m_Literal {_literal} {}
+		virtual Value * codegen() const override;
 };
 
 // Expression class for referencing variables with a type
