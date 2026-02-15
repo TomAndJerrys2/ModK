@@ -37,6 +37,16 @@ class StringLiteralAST : public ExpressionAST {
 		virtual Value * codegen() const override;
 };
 
+static std::unique_ptr<LLVMContext> TheContext;
+static std::unique_ptr<IRBuilder> Builder;
+static std::unique_ptr<Module> TheModule;
+static std::unique_ptr<std::string, Value *> NamedValues;
+
+Value * LogErrorV(const char* Str) {
+	LogError(Str);
+	return nullptr;
+}
+
 // Expression class for referencing variables with a type
 // such as <type> <name>;
 class VariableExpressionAST : public ExpressionAST {
